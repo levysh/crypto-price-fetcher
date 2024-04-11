@@ -1,6 +1,7 @@
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import joinedload
 from sqlalchemy.orm import Session
 
 from src.currency.models import Currency
@@ -16,7 +17,7 @@ def list_prices(session: Session = Depends(get_db)) -> Any:
     Retrieve items.
     """
 
-    return session.query(Currency).all()
+    return session.query(Currency).options(joinedload(Currency.prices)).all()
 
 
 @api_router.get(
@@ -26,7 +27,7 @@ def get_price(name: str, session: Session = Depends(get_db)) -> Any:
     """
     Get item by ID.
     """
-    currency = session.query(Currency).filter(Currency.name == name).first()
+    currency = session.query(Currency).filter(Currency.name == name).options(joinedload(Currency.prices)).first()
     if currency is None:
         raise HTTPException(status_code=404, detail="Currency not found")
 
